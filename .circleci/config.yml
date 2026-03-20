@@ -1,75 +1,54 @@
 version: 2.1
 
-jobs:
-  build:
-    machine:
-      image: ubuntu-2404:current
-
-    steps:
-      - checkout
-
-      - run:
-          name: Run shellcheck
-          command: make shellcheck
-
-      - run:
-          name: Insert version
-          command: |
-            if [ -n "$CIRCLE_TAG" ]; then
-              sed -i "s/dirty/$CIRCLE_TAG/g" flash
-            else
-              sed -i "s/dirty/latest/g" flash
-            fi
-
-      - run:
-          name: Show version
-          command: ./flash --version
-
-      - run:
-          name: Run BATS tests
-          command: make test
-
-  deploy:
-    machine:
-      image: ubuntu-2404:current
-
-    steps:
-      - checkout
-
-      - run:
-          name: Insert version
-          command: sed -i "s/dirty/$CIRCLE_TAG/g" flash
-
-      - run:
-          name: Show version
-          command: ./flash --version
-
-      - run:
-          name: Run BATS tests with version
-          command: make test
-
-      - run:
-          name: Deploy
-          command: |
-            curl -sSL https://github.com/tcnksm/ghr/releases/download/v0.16.2/ghr_v0.16.2_linux_amd64.tar.gz | tar xz --strip-components=1
-            mkdir output
-            sha256sum flash > flash.sha256
-            cp flash* output
-            ./ghr -u barthel $CIRCLE_TAG output/
-
 workflows:
-  version: 2
-  build-n-deploy:
+  version: 2.1
+  build_and_deploy:
     jobs:
       - build:
           filters:
             tags:
               only: /.*/
-      - deploy:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /^.*/
-            branches:
-              ignore: /.*/
+          context:
+            - "github"
+
+jobs:
+  build:
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+
+      - run:
+          name: Build and test
+          command: |
+            VERSION="${CIRCLE_TAG}" ./build.sh
+
+      - run:
+          name: Deploy
+          command: |
+            if [ -n "${CIRCLE_TAG}" ]; then
+              go install github.com/tcnksm/ghr@latest
+              MAJOR="${CIRCLE_TAG%%.*}"
+              MINOR="${CIRCLE_TAG%.*}"
+              PRE=""
+              if [[ ${CIRCLE_TAG} = *"rc"* ]]; then
+                PRE="-prerelease"
+              fi
+              # Prepare artifacts
+              mkdir -p output
+              cp flash output/
+              sha256sum flash > output/flash.sha256
+              # Publish versioned release
+              ghr ${PRE} -replace -u "${GITHUB_USER}" "${CIRCLE_TAG}" output/
+              # Update floating tags (major.minor, major, latest, stable)
+              # skip for pre-releases
+              if [ -z "${PRE}" ]; then
+                ghr -replace -u "${GITHUB_USER}" "${MINOR}" output/
+                ghr -replace -u "${GITHUB_USER}" "${MAJOR}" output/
+                ghr -replace -u "${GITHUB_USER}" latest output/
+                ghr -replace -u "${GITHUB_USER}" stable output/
+              fi
+            fi
+
+      - store_artifacts:
+          path: /home/circleci/project/output
