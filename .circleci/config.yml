@@ -17,6 +17,8 @@ jobs:
           command: |
             if [ -n "$CIRCLE_TAG" ]; then
               sed -i "s/dirty/$CIRCLE_TAG/g" flash
+            else
+              sed -i "s/dirty/latest/g" flash
             fi
 
       - run:
