@@ -2,7 +2,7 @@ load test_helper
 
 expected=$CIRCLE_TAG
 if [ -z "$CIRCLE_TAG" ]; then
-  expected=dirty
+  expected=latest
 fi
 
 @test "flash --version shows version $expected" {

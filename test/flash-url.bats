@@ -11,6 +11,7 @@ teardown() {
 }
 
 @test "flash with url to img.zip works" {
+  skip "GitHub releases removed; SD images are published to Docker Hub"
   run ./flash -f -d $img https://github.com/barthel/alpine-image-builder-rpi/releases/download/3.21.0/alpineos-rpi-3.21.0.img.zip
   assert_success
   assert_output_contains Finished.
