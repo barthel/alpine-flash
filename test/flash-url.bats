@@ -11,7 +11,7 @@ teardown() {
 }
 
 @test "flash with url to img.zip works" {
-  run ./flash -f -d $img https://github.com/barthel/alpine-image-builder-rpi/releases/download/v1.0.0/alpineos-rpi-v1.0.0.img.zip
+  run ./flash -f -d $img https://github.com/barthel/alpine-image-builder-rpi/releases/download/3.21.0/alpineos-rpi-3.21.0.img.zip
   assert_success
   assert_output_contains Finished.
 

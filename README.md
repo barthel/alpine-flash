@@ -6,7 +6,7 @@ Note that at the end of the flashing process the tool tries to customize the SD 
 
 The typical workflow looks like this:
 
-1. Run `flash https://github.com/barthel/alpine-image-builder-rpi/releases/download/v1.0.0/alpineos-rpi-v1.0.0.img.zip`
+1. Run `flash https://github.com/barthel/alpine-image-builder-rpi/releases/download/3.21.0/alpineos-rpi-3.21.0.img.zip`
 2. Insert SD card to your notebook
 3. Press RETURN
 4. Eject SD card and insert it to your Raspberry Pi - done!
@@ -33,7 +33,7 @@ At the moment only Mac OS X and Linux is supported.
 Download the appropriate version for Linux or Mac with this command
 
 ```bash
-curl -LO https://github.com/barthel/alpine-flash/releases/download/1.0.0/flash
+curl -LO https://github.com/barthel/alpine-flash/releases/download/3.21.0/flash
 chmod +x flash
 sudo mv flash /usr/local/bin/flash
 ```
@@ -139,7 +139,7 @@ hdmi_force_hotplug=1
 ### Flash a compressed SD image from the internet
 
 ```bash
-flash https://github.com/barthel/alpine-image-builder-rpi/releases/download/v1.0.0/alpineos-rpi-v1.0.0.img.zip
+flash https://github.com/barthel/alpine-image-builder-rpi/releases/download/3.21.0/alpineos-rpi-3.21.0.img.zip
 ```
 
 ### Flash and change the hostname
@@ -160,7 +160,7 @@ ssh admin@mypi.local
 The options `--userdata` and `--bootconf` must be used to disable UART and enable onboard WiFi for Raspberry Pi Zero W. For external WiFi sticks you do not need to specify the `-bootconf` option.
 
 ```
-flash --userdata sample/wifi-user-data.yml --bootconf sample/no-uart-config.txt alpineos-rpi-v1.0.0.img
+flash --userdata sample/wifi-user-data.yml --bootconf sample/no-uart-config.txt alpineos-rpi-3.21.0.img
 ```
 
 ### Automating flash
@@ -168,7 +168,7 @@ flash --userdata sample/wifi-user-data.yml --bootconf sample/no-uart-config.txt 
 For non-interactive usage, you can predefine the user input in the flash command with the `-d` and `-f` options:
 
 ```
-flash -d /dev/mmcblk0 -f alpineos-rpi-v1.0.0.img
+flash -d /dev/mmcblk0 -f alpineos-rpi-3.21.0.img
 ```
 
 ## Development

@@ -13,7 +13,7 @@ Otherwise copy the YAML file to the boot partition of the SD card to the `/boot/
 Quick installation:
 
 ```
-$ flash -u your-cloud-init.yml https://github.com/barthel/alpine-image-builder-rpi/releases/download/v1.0.0/alpineos-rpi-v1.0.0.img.zip
+$ flash -u your-cloud-init.yml https://github.com/barthel/alpine-image-builder-rpi/releases/download/3.21.0/alpineos-rpi-3.21.0.img.zip
 $ ssh admin@alpine-black-pearl.local
 ```
 
