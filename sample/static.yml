@@ -1,0 +1,36 @@
+#cloud-config
+# vim: syntax=yaml
+#
+
+# Set your hostname here, the manage_etc_hosts will update the hosts file entries as well
+hostname: alpine-static
+manage_etc_hosts: true
+
+# You could modify this for your own user information
+users:
+  - name: admin
+    gecos: "Alpine Admin"
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    groups: users,docker,video
+    lock_passwd: false
+    ssh_pwauth: true
+    chpasswd: { expire: false }
+
+package_upgrade: false
+
+# Static IP address
+write_files:
+  - content: |
+      auto eth0
+      iface eth0 inet static
+        address 192.168.1.31
+        netmask 255.255.255.0
+        gateway 192.168.1.1
+        dns-nameservers 192.168.1.1 8.8.8.8
+    path: /etc/network/interfaces.d/eth0
+
+# These commands will be ran once on first boot only
+runcmd:
+  # Pickup the hostname changes
+  - 'rc-service avahi-daemon restart'

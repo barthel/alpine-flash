@@ -1,0 +1,8 @@
+node_modules/
+*.img
+*.yaml
+*.zip
+*.xz
+*.gz
+*.sha256
+output/

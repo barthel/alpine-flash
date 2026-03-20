@@ -1,0 +1,49 @@
+#cloud-config
+# vim: syntax=yaml
+#
+
+# Set your hostname here, the manage_etc_hosts will update the hosts file entries as well
+hostname: alpine-pi
+manage_etc_hosts: true
+
+# You could modify this for your own user information
+users:
+  - name: admin
+    gecos: "Alpine Admin"
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    groups: users,docker,video
+    lock_passwd: false
+    ssh_pwauth: true
+    chpasswd: { expire: false }
+
+package_upgrade: false
+
+# WiFi connect to HotSpot
+# To make wifi work with RPi Zero W
+# you also have to set "enable_uart=0" in config.txt
+# See no-uart-config.txt for an example.
+#
+# - use `wpa_passphrase SSID PASSWORD` to encrypt the psk
+write_files:
+  - content: |
+      country=YourCountryCode
+      ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+      update_config=1
+      network={
+      ssid="YourSSID"
+      psk="YourSecretPreSharedKey"
+      proto=RSN
+      key_mgmt=WPA-PSK
+      pairwise=CCMP
+      auth_alg=OPEN
+      }
+    path: /etc/wpa_supplicant/wpa_supplicant.conf
+
+# These commands will be ran once on first boot only
+runcmd:
+  # Pickup the hostname changes
+  - 'rc-service avahi-daemon restart'
+
+  # Activate WiFi interface
+  - 'ifup wlan0'
