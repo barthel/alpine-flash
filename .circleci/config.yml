@@ -9,7 +9,7 @@ workflows:
             tags:
               only: /.*/
           context:
-            - "Docker Hub"
+            - "github"
 
 jobs:
   build:
@@ -19,21 +19,36 @@ jobs:
       - checkout
 
       - run:
-          name: Run Docker login
-          command: |
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-
-      - run:
           name: Build and test
           command: |
-            VERSION="${CIRCLE_TAG}" PUSH=true ./build.sh
+            VERSION="${CIRCLE_TAG}" ./build.sh
 
       - run:
-          name: Collect artifacts
+          name: Deploy
           command: |
-            mkdir -p output
-            cp flash output/
-            sha256sum flash > output/flash.sha256
+            if [ -n "${CIRCLE_TAG}" ]; then
+              go install github.com/tcnksm/ghr@latest
+              MAJOR="${CIRCLE_TAG%%.*}"
+              MINOR="${CIRCLE_TAG%.*}"
+              PRE=""
+              if [[ ${CIRCLE_TAG} = *"rc"* ]]; then
+                PRE="-prerelease"
+              fi
+              # Prepare artifacts
+              mkdir -p output
+              cp flash output/
+              sha256sum flash > output/flash.sha256
+              # Publish versioned release
+              ghr ${PRE} -replace -u "${GITHUB_USER}" "${CIRCLE_TAG}" output/
+              # Update floating tags (major.minor, major, latest, stable)
+              # skip for pre-releases
+              if [ -z "${PRE}" ]; then
+                ghr -replace -u "${GITHUB_USER}" "${MINOR}" output/
+                ghr -replace -u "${GITHUB_USER}" "${MAJOR}" output/
+                ghr -replace -u "${GITHUB_USER}" latest output/
+                ghr -replace -u "${GITHUB_USER}" stable output/
+              fi
+            fi
 
       - store_artifacts:
           path: /home/circleci/project/output
