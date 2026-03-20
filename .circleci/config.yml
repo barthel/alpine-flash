@@ -34,22 +34,27 @@ jobs:
           name: Deploy GitHub Release
           command: |
             if [ -n "${CIRCLE_TAG}" ]; then
-              go install github.com/tcnksm/ghr@latest
-              MAJOR="${CIRCLE_TAG%%.*}"
-              MINOR="${CIRCLE_TAG%.*}"
-              PRE=""
+              export GH_TOKEN="${GITHUB_TOKEN}"
+              PRE_FLAG=""
               if [[ ${CIRCLE_TAG} = *"rc"* ]]; then
-                PRE="-prerelease"
+                PRE_FLAG="--prerelease"
               fi
-              # Publish versioned release
-              ghr ${PRE} -replace -u "${GITHUB_USER}" "${CIRCLE_TAG}" output/
+              # Create or update versioned release with assets
+              gh release delete "${CIRCLE_TAG}" --yes --cleanup-tag 2>/dev/null || true
+              gh release create "${CIRCLE_TAG}" output/flash output/flash.sha256 \
+                --title "${CIRCLE_TAG}" ${PRE_FLAG}
               # Update floating tags (major.minor, major, latest, stable)
               # skip for pre-releases
-              if [ -z "${PRE}" ]; then
-                ghr -replace -u "${GITHUB_USER}" "${MINOR}" output/
-                ghr -replace -u "${GITHUB_USER}" "${MAJOR}" output/
-                ghr -replace -u "${GITHUB_USER}" latest output/
-                ghr -replace -u "${GITHUB_USER}" stable output/
+              if [ -z "${PRE_FLAG}" ]; then
+                MAJOR="${CIRCLE_TAG%%.*}"
+                MINOR="${CIRCLE_TAG%.*}"
+                for tag in "${MINOR}" "${MAJOR}" latest stable; do
+                  gh release delete "${tag}" --yes --cleanup-tag 2>/dev/null || true
+                  git tag -f "${tag}"
+                  git push -f origin "${tag}"
+                  gh release create "${tag}" output/flash output/flash.sha256 \
+                    --title "${tag}" --latest=false
+                done
               fi
             fi
 
