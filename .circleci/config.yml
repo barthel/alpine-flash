@@ -19,14 +19,16 @@ jobs:
       - checkout
 
       - run:
-          name: Login to GitHub Container Registry
+          name: Build and test
           command: |
-            echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdin
+            VERSION="${CIRCLE_TAG}" ./build.sh
 
       - run:
-          name: Build, test and push to ghcr.io
+          name: Collect artifacts
           command: |
-            VERSION="${CIRCLE_TAG}" PUSH=true ./build.sh
+            mkdir -p output
+            cp flash output/
+            sha256sum flash > output/flash.sha256
 
       - run:
           name: Deploy GitHub Release
@@ -50,13 +52,6 @@ jobs:
                 ghr -replace -u "${GITHUB_USER}" stable output/
               fi
             fi
-
-      - run:
-          name: Collect artifacts
-          command: |
-            mkdir -p output
-            cp flash output/
-            sha256sum flash > output/flash.sha256
 
       - store_artifacts:
           path: /home/circleci/project/output
