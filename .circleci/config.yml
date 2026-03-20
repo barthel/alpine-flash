@@ -45,23 +45,9 @@ jobs:
               if [[ ${CIRCLE_TAG} = *"rc"* ]]; then
                 PRE_FLAG="--prerelease"
               fi
-              # Create or update versioned release with assets
               gh release delete "${CIRCLE_TAG}" --yes --cleanup-tag 2>/dev/null || true
               gh release create "${CIRCLE_TAG}" output/flash output/flash.sha256 \
                 --title "${CIRCLE_TAG}" ${PRE_FLAG}
-              # Update floating tags (major.minor, major, latest, stable)
-              # skip for pre-releases
-              if [ -z "${PRE_FLAG}" ]; then
-                MAJOR="${CIRCLE_TAG%%.*}"
-                MINOR="${CIRCLE_TAG%.*}"
-                for tag in "${MINOR}" "${MAJOR}" latest stable; do
-                  gh release delete "${tag}" --yes --cleanup-tag 2>/dev/null || true
-                  git tag -f "${tag}"
-                  git push -f origin "${tag}"
-                  gh release create "${tag}" output/flash output/flash.sha256 \
-                    --title "${tag}" --latest=false
-                done
-              fi
             fi
 
       - store_artifacts:
