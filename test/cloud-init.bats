@@ -3,8 +3,12 @@ export OS=$(uname -s)
 
 setup() {
   if [ ! -f cloud-init.img ]; then
-    # download SD card image with cloud-init
-    curl -L -o download.img.zip https://github.com/barthel/alpine-image-builder-rpi/releases/download/3.21.0/alpineos-rpi-3.21.0.img.zip
+    # download SD card image with cloud-init; skip the test if unavailable
+    if ! curl -L --fail --silent -o download.img.zip "${CLOUD_INIT_IMG_URL:-}" 2>/dev/null \
+        || [ ! -s download.img.zip ]; then
+      skip "cloud-init.img not available (set CLOUD_INIT_IMG_URL)"
+      return
+    fi
     unzip download.img.zip
     # cut only 70 MByte to flash faster
     dd if=alpineos-rpi-3.21.0.img of=cloud-init.img bs=1048576 count=70
