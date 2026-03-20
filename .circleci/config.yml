@@ -19,12 +19,17 @@ jobs:
       - checkout
 
       - run:
-          name: Build and test
+          name: Login to GitHub Container Registry
           command: |
-            VERSION="${CIRCLE_TAG}" ./build.sh
+            echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdin
 
       - run:
-          name: Deploy
+          name: Build, test and push to ghcr.io
+          command: |
+            VERSION="${CIRCLE_TAG}" PUSH=true ./build.sh
+
+      - run:
+          name: Deploy GitHub Release
           command: |
             if [ -n "${CIRCLE_TAG}" ]; then
               go install github.com/tcnksm/ghr@latest
@@ -34,10 +39,6 @@ jobs:
               if [[ ${CIRCLE_TAG} = *"rc"* ]]; then
                 PRE="-prerelease"
               fi
-              # Prepare artifacts
-              mkdir -p output
-              cp flash output/
-              sha256sum flash > output/flash.sha256
               # Publish versioned release
               ghr ${PRE} -replace -u "${GITHUB_USER}" "${CIRCLE_TAG}" output/
               # Update floating tags (major.minor, major, latest, stable)
@@ -49,6 +50,13 @@ jobs:
                 ghr -replace -u "${GITHUB_USER}" stable output/
               fi
             fi
+
+      - run:
+          name: Collect artifacts
+          command: |
+            mkdir -p output
+            cp flash output/
+            sha256sum flash > output/flash.sha256
 
       - store_artifacts:
           path: /home/circleci/project/output
