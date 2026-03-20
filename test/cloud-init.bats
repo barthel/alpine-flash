@@ -49,7 +49,7 @@ teardown() {
 
   mount_sd_boot $img /tmp/boot
   run cat /tmp/boot/user-data
-  assert_output_contains "hostname: alpine-black-pearl"
+  assert_output_contains "hostname: black-pearl"
   assert_output_contains "name: admin"
 
   assert [ ! -e "/tmp/boot/user-data-e" ]
@@ -141,7 +141,7 @@ teardown() {
 
   mount_sd_boot $img /tmp/boot
   run cat /tmp/boot/user-data
-  assert_output_contains "hostname: alpine-black-pearl"
+  assert_output_contains "hostname: black-pearl"
   assert_output_contains "name: admin"
 
   assert [ -e "/tmp/boot/meta-data" ]
@@ -185,7 +185,7 @@ teardown() {
 
   mount_sd_boot $img /tmp/boot
   run cat /tmp/boot/user-data
-  assert_output_contains "hostname: alpine-black-pearl"
+  assert_output_contains "hostname: black-pearl"
   assert_output_contains "name: admin"
 
   assert [ -e "/tmp/boot/meta-data" ]

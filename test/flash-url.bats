@@ -18,7 +18,7 @@ teardown() {
   mount_sd_boot $img /tmp/boot
   run cat /tmp/boot/user-data
   assert_success
-  assert_output_contains "hostname: alpine-black-pearl"
+  assert_output_contains "hostname: black-pearl"
   assert [ -e "/tmp/boot/meta-data" ]
 }
 
